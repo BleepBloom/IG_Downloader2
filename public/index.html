@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Instagram Reel Downloader</title>
+</head>
+<body>
+  <h2>Download Instagram Reel</h2>
+  <input type="text" id="url" placeholder="Paste Reel URL here" size="50" />
+  <button onclick="download()">Get Video Link</button>
+  <p id="result"></p>
+
+  <script>
+    async function download() {
+      const url = document.getElementById('url').value;
+      const res = await fetch(`/api/getReel?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+      const result = document.getElementById('result');
+      if (data.video_url) {
+        result.innerHTML = `<a href="${data.video_url}" target="_blank">Download Video</a>`;
+      } else {
+        result.textContent = 'Error: ' + data.error;
+      }
+    }
+  </script>
+</body>
+</html>
