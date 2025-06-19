@@ -11,22 +11,25 @@ export default async function handler(req, res) {
     }
     const shortcode = match[2];
 
-    const response = await fetch(`https://www.instagram.com/p/${shortcode}/?__a=1&__d=dis`, {
+    const igUrl = `https://www.instagram.com/p/${shortcode}/`;
+
+    const response = await fetch(igUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'Accept-Language': 'en-US,en;q=0.9'
       }
     });
 
-    const json = await response.json();
-    const video_url =
-      json?.graphql?.shortcode_media?.video_url ||
-      json?.items?.[0]?.video_versions?.[0]?.url;
+    const html = await response.text();
+    const matchVideo = html.match(/"video_url":"([^"]+)"/);
 
-    if (video_url) {
-      res.status(200).json({ video_url });
+    if (matchVideo && matchVideo[1]) {
+      const decodedUrl = matchVideo[1].replace(/\\u0026/g, '&');
+      res.status(200).json({ video_url: decodedUrl });
     } else {
-      res.status(404).json({ error: 'Could not find video URL' });
+      res.status(404).json({ error: 'Could not extract video URL. The post may be private or Instagram layout changed.' });
     }
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
